@@ -5,7 +5,7 @@ def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
 setup(
-    name='Reverse Geocode', 
+    name='reverse_geocode', 
     version='1.0',
     packages=['reverse_geocode'],
     package_dir={'reverse_geocode' : '.'}, # look for package contents in current directory
@@ -15,5 +15,6 @@ setup(
     description='Reverse geocode the given latitude / longitude',
     long_description=read('README.rst'),
     url='https://bitbucket.org/richardpenman/reverse_geocode',
-    license='lgpl'
+    license='lgpl',
+    #install_requires=['numpy', 'scipy']
 )
