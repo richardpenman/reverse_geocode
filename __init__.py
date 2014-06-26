@@ -51,7 +51,7 @@ class GeocodeData:
         else:
             results = [self.locations[index] for index in indices]
             for result in results:
-                result['country'] = self.countries.get(result['code'], '')
+                result['country'] = self.countries.get(result['country_code'], '')
             return results
 
 
@@ -92,9 +92,9 @@ class GeocodeData:
 
         # load a list of known coordinates and corresponding locations
         coordinates, locations = [], []
-        for latitude, longitude, code, city in rows:
+        for latitude, longitude, country_code, city in rows:
             coordinates.append((latitude, longitude))
-            locations.append(dict(code=code, city=city))
+            locations.append(dict(country_code=country_code, city=city))
         return coordinates, locations
 
 
