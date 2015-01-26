@@ -25,6 +25,6 @@ Install
 .. sourcecode:: bash
 
     apt-get install python-numpy python-scipy
-    pip install reverse_engineer
+    pip install reverse_geocode
 
 ..
