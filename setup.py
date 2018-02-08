@@ -6,7 +6,7 @@ def read(filename):
 
 setup(
     name='reverse_geocode', 
-    version='1.0',
+    version='1.1',
     packages=['reverse_geocode'],
     package_dir={'reverse_geocode' : '.'}, # look for package contents in current directory
     package_data={'reverse_geocode' : ['geocode.csv', 'countries.csv']},
@@ -16,5 +16,5 @@ setup(
     long_description=read('README.rst'),
     url='https://bitbucket.org/richardpenman/reverse_geocode',
     license='lgpl',
-    #install_requires=['numpy', 'scipy']
+    install_requires=['numpy', 'scipy']
 )
