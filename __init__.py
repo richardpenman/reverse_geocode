@@ -1,10 +1,8 @@
-import os
-import sys
-import csv
-csv.field_size_limit(sys.maxint)
-import urllib
-import zipfile
-import collections
+# -*- coding: utf-8 -*-
+
+import collections, csv, logging, os, sys, zipfile
+csv.field_size_limit(sys.maxsize)
+from future.moves.urllib.request import urlretrieve
 from scipy.spatial import cKDTree as KDTree
 
 # location of geocode data to download
@@ -46,7 +44,7 @@ class GeocodeData:
         try:
             distances, indices = self.tree.query(coordinates, k=1)
         except ValueError as e:
-            print 'Unable to parse coordinates:', coordinates
+            logging.info('Unable to parse coordinates: {}'.format(coordinates))
             raise e
         else:
             results = [self.locations[index] for index in indices]
@@ -60,8 +58,8 @@ class GeocodeData:
         """
         local_filename = abs_path(os.path.basename(GEOCODE_URL))
         if not os.path.exists(local_filename):
-            print 'Downloading:', GEOCODE_URL
-            urllib.urlretrieve(GEOCODE_URL, local_filename)
+            logging.info('Downloading: {}'.format(GEOCODE_URL))
+            urlretrieve(GEOCODE_URL, local_filename)
         return local_filename
 
 
@@ -75,7 +73,7 @@ class GeocodeData:
             if not os.path.exists(GEOCODE_FILENAME):
                 local_filename = self.download()
                 z = zipfile.ZipFile(open(local_filename))
-                print 'Extracting:', GEOCODE_FILENAME
+                logging.info('Extracting: {}'.format(GEOCODE_FILENAME))
                 open(GEOCODE_FILENAME, 'w').write(z.read(GEOCODE_FILENAME))
 
             # extract coordinates into more compact CSV for faster loading
@@ -121,5 +119,5 @@ if __name__ == '__main__':
     # test some coordinate lookups
     city1 = (-37.81, 144.96)
     city2 = (31.76, 35.21)
-    print get(city1)
-    print search([city1, city2])
+    print(get(city1))
+    print(search([city1, city2]))

@@ -22,8 +22,11 @@ The module has a set of known geocoded locations and uses a `k-d tree <http://en
 Install
 =======
 
+Supports python 2 & 3:
+
 .. sourcecode:: bash
 
     pip install reverse-geocode
+    pip3 install reverse-geocode
 
 ..
