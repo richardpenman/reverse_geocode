@@ -56,7 +56,7 @@ class GeocodeData:
     def download(self):
         """Download geocode file
         """
-        local_filename = abs_path(os.path.basename(GEOCODE_URL))
+        local_filename = os.path.abspath(os.path.basename(GEOCODE_URL))
         if not os.path.exists(local_filename):
             logging.info('Downloading: {}'.format(GEOCODE_URL))
             urlretrieve(GEOCODE_URL, local_filename)
@@ -71,10 +71,11 @@ class GeocodeData:
             rows = csv.reader(open(local_filename))
         else:
             if not os.path.exists(GEOCODE_FILENAME):
+                # remove GEOCODE_FILENAME to get updated data
                 local_filename = self.download()
-                z = zipfile.ZipFile(open(local_filename))
+                z = zipfile.ZipFile(local_filename)
                 logging.info('Extracting: {}'.format(GEOCODE_FILENAME))
-                open(GEOCODE_FILENAME, 'w').write(z.read(GEOCODE_FILENAME))
+                open(GEOCODE_FILENAME, 'wb').write(z.read(GEOCODE_FILENAME))
 
             # extract coordinates into more compact CSV for faster loading
             writer = csv.writer(open(local_filename, 'w'))
@@ -117,7 +118,7 @@ def search(coordinates):
 
 if __name__ == '__main__':
     # test some coordinate lookups
-    city1 = (-37.81, 144.96)
-    city2 = (31.76, 35.21)
+    city1 = -37.81, 144.96
+    city2 = 31.76, 35.21
     print(get(city1))
     print(search([city1, city2]))
