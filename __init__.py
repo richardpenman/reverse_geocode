@@ -2,7 +2,10 @@
 
 import collections, csv, logging, os, sys, zipfile
 csv.field_size_limit(sys.maxsize)
-from future.moves.urllib.request import urlretrieve
+try:
+    from urllib import urlretrieve
+except ImportError:
+    from urllib.request import urlretrieve
 from scipy.spatial import cKDTree as KDTree
 
 # location of geocode data to download
