@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import collections, csv, logging, os, sys, zipfile
+import csv, logging, os, sys, zipfile
 if sys.platform == 'win32':
     csv.field_size_limit(2**31-1)
 else:
