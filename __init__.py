@@ -20,6 +20,7 @@ def singleton(cls):
     """Singleton pattern to avoid loading class multiple times
     """
     instances = {}
+
     def getinstance():
         if cls not in instances:
             instances[cls] = cls()
@@ -34,7 +35,6 @@ class GeocodeData:
         coordinates, self.locations = self.extract(rel_path(geocode_filename))
         self.tree = KDTree(coordinates)
         self.load_countries(rel_path(country_filename))
-  
 
     def load_countries(self, country_filename):
         """Load a map of country code to name
@@ -42,7 +42,6 @@ class GeocodeData:
         self.countries = {}
         for code, name in csv.reader(open(country_filename)):
             self.countries[code] = name
-
 
     def query(self, coordinates):
         """Find closest match to this list of coordinates
@@ -58,7 +57,6 @@ class GeocodeData:
                 result['country'] = self.countries.get(result['country_code'], '')
             return results
 
-
     def download(self):
         """Download geocode file
         """
@@ -67,7 +65,6 @@ class GeocodeData:
             logging.info('Downloading: {}'.format(GEOCODE_URL))
             urlretrieve(GEOCODE_URL, local_filename)
         return local_filename
-
 
     def extract(self, local_filename):
         """Extract geocode data from zip
@@ -114,6 +111,7 @@ def get(coordinate):
     """
     gd = GeocodeData()
     return gd.query([coordinate])[0]
+
 
 def search(coordinates):
     """Search for closest known locations to these coordinates
