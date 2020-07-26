@@ -71,19 +71,20 @@ class GeocodeData:
         """
         if os.path.exists(local_filename):
             # open compact CSV
-            rows = csv.reader(open(local_filename))
+            rows = csv.reader(open(local_filename, 'r', encoding='utf-8'))
         else:
             if not os.path.exists(GEOCODE_FILENAME):
                 # remove GEOCODE_FILENAME to get updated data
-                local_filename = self.download()
-                z = zipfile.ZipFile(local_filename)
+                downloadedFile = self.download()
+                z = zipfile.ZipFile(downloadedFile)
                 logging.info('Extracting: {}'.format(GEOCODE_FILENAME))
                 open(GEOCODE_FILENAME, 'wb').write(z.read(GEOCODE_FILENAME))
+                z.close()
 
             # extract coordinates into more compact CSV for faster loading
-            writer = csv.writer(open(local_filename, 'w'))
+            writer = csv.writer(open(local_filename, 'w', encoding='utf-8', newline=''))
             rows = []
-            for row in csv.reader(open(GEOCODE_FILENAME), delimiter='\t'):
+            for row in csv.reader(open(GEOCODE_FILENAME, 'r', encoding='utf-8'), delimiter='\t'):
                 latitude, longitude = row[4:6]
                 country_code = row[8]
                 if latitude and longitude and country_code:
@@ -91,6 +92,9 @@ class GeocodeData:
                     row = latitude, longitude, country_code, city
                     writer.writerow(row)
                     rows.append(row)
+            # cleanup downloaded files
+            os.remove(downloadedFile)
+            os.remove(GEOCODE_FILENAME)
 
         # load a list of known coordinates and corresponding locations
         coordinates, locations = [], []
