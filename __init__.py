@@ -32,32 +32,32 @@ def singleton(cls):
 class GeocodeData:
 
     def __init__(self, geocode_filename='geocode.csv', country_filename='countries.csv'):
-        coordinates, self.locations = self.extract(rel_path(geocode_filename))
-        self.tree = KDTree(coordinates)
-        self.load_countries(rel_path(country_filename))
+        coordinates, self.__locations = self.__extract(rel_path(geocode_filename))
+        self.__tree = KDTree(coordinates)
+        self.__load_countries(rel_path(country_filename))
 
-    def load_countries(self, country_filename):
+    def __load_countries(self, country_filename):
         """Load a map of country code to name
         """
-        self.countries = {}
+        self.__countries = {}
         for code, name in csv.reader(open(country_filename)):
-            self.countries[code] = name
+            self.__countries[code] = name
 
     def query(self, coordinates):
         """Find closest match to this list of coordinates
         """
         try:
-            distances, indices = self.tree.query(coordinates, k=1)
+            distances, indices = self.__tree.query(coordinates, k=1)
         except ValueError as e:
             logging.info('Unable to parse coordinates: {}'.format(coordinates))
             raise e
         else:
-            results = [self.locations[index] for index in indices]
+            results = [self.__locations[index] for index in indices]
             for result in results:
-                result['country'] = self.countries.get(result['country_code'], '')
+                result['country'] = self.__countries.get(result['country_code'], '')
             return results
 
-    def download(self):
+    def __download(self):
         """Download geocode file
         """
         local_filename = os.path.abspath(os.path.basename(GEOCODE_URL))
@@ -66,7 +66,7 @@ class GeocodeData:
             urlretrieve(GEOCODE_URL, local_filename)
         return local_filename
 
-    def extract(self, local_filename):
+    def __extract(self, local_filename):
         """Extract geocode data from zip
         """
         if os.path.exists(local_filename):
@@ -75,7 +75,7 @@ class GeocodeData:
         else:
             if not os.path.exists(GEOCODE_FILENAME):
                 # remove GEOCODE_FILENAME to get updated data
-                downloadedFile = self.download()
+                downloadedFile = self.__download()
                 z = zipfile.ZipFile(downloadedFile)
                 logging.info('Extracting: {}'.format(GEOCODE_FILENAME))
                 open(GEOCODE_FILENAME, 'wb').write(z.read(GEOCODE_FILENAME))
@@ -96,12 +96,12 @@ class GeocodeData:
             os.remove(downloadedFile)
             os.remove(GEOCODE_FILENAME)
 
-        # load a list of known coordinates and corresponding locations
-        coordinates, locations = [], []
+        # load a list of known coordinates and corresponding __locations
+        coordinates, __locations = [], []
         for latitude, longitude, country_code, city in rows:
             coordinates.append((latitude, longitude))
-            locations.append(dict(country_code=country_code, city=city))
-        return coordinates, locations
+            __locations.append(dict(country_code=country_code, city=city))
+        return coordinates, __locations
 
 
 def rel_path(filename):
