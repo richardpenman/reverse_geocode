@@ -17,6 +17,7 @@ Example usage:
 
 The module has a set of known geocoded locations and uses a `k-d tree <http://en.wikipedia.org/wiki/K-d_tree>`_ to efficiently find the nearest neighbour. This can be useful when you need to reverse geocode a large number of coordinates so a web API is not practical.
 
+As this is point based and not polygon based lookup it will only give a rough idea of the location/city
 
 =======
 Install
