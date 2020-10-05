@@ -40,8 +40,9 @@ class GeocodeData:
         """Load a map of country code to name
         """
         self.__countries = {}
-        for code, name in csv.reader(open(country_filename, 'r')):
-            self.__countries[code] = name
+        with open(country_filename, 'r') as handler:
+            for code, name in csv.reader(handler):
+                self.__countries[code] = name
 
     def query(self, coordinates):
         """Find closest match to this list of coordinates
