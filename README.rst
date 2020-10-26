@@ -10,8 +10,8 @@ Example usage:
     >>> import reverse_geocode
     >>> coordinates = (-37.81, 144.96), (31.76, 35.21)
     >>> reverse_geocode.search(coordinates)
-    [{'city': 'Melbourne', 'code': 'AU', 'country': 'Australia'},
-     {'city': 'Jerusalem', 'code': 'IL', 'country': 'Israel'}]
+    [{'city': 'Melbourne', 'country_code': 'AU', 'country': 'Australia'},
+     {'city': 'Jerusalem', 'country_code': 'IL', 'country': 'Israel'}]
 
 ..
 
