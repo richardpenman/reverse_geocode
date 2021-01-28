@@ -40,7 +40,7 @@ class GeocodeData:
         """Load a map of country code to name
         """
         self.__countries = {}
-        with open(country_filename, 'r') as handler:
+        with open(country_filename, 'r', encoding='utf-8') as handler:
             for code, name in csv.reader(handler):
                 self.__countries[code] = name
 
@@ -72,7 +72,7 @@ class GeocodeData:
         """
         if os.path.exists(local_filename):
             # open compact CSV
-            rows = csv.reader(open(local_filename, 'r'))
+            rows = csv.reader(open(local_filename, 'r', encoding='utf-8'))
         else:
             if not os.path.exists(GEOCODE_FILENAME):
                 # remove GEOCODE_FILENAME to get updated data
@@ -83,9 +83,9 @@ class GeocodeData:
                 z.close()
 
             # extract coordinates into more compact CSV for faster loading
-            writer = csv.writer(open(local_filename, 'w'))
+            writer = csv.writer(open(local_filename, 'w', encoding='utf-8'))
             rows = []
-            for row in csv.reader(open(GEOCODE_FILENAME, 'r'), delimiter='\t'):
+            for row in csv.reader(open(GEOCODE_FILENAME, 'r', encoding='utf-8'), delimiter='\t'):
                 latitude, longitude = row[4:6]
                 country_code = row[8]
                 if latitude and longitude and country_code:
