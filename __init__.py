@@ -77,10 +77,10 @@ class GeocodeData:
             if not os.path.exists(GEOCODE_FILENAME):
                 # remove GEOCODE_FILENAME to get updated data
                 downloadedFile = self.__download()
-                z = zipfile.ZipFile(downloadedFile)
                 logging.info('Extracting: {}'.format(GEOCODE_FILENAME))
-                open(GEOCODE_FILENAME, 'wb').write(z.read(GEOCODE_FILENAME))
-                z.close()
+                with zipfile.ZipFile(downloadedFile) as z:
+                    with open(GEOCODE_FILENAME, 'wb') as fp:
+                        fp.write(z.read(GEOCODE_FILENAME))
 
             # extract coordinates into more compact CSV for faster loading
             writer = csv.writer(open(local_filename, 'w'))
