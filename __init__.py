@@ -76,9 +76,9 @@ class GeocodeData:
         else:
             if not os.path.exists(GEOCODE_FILENAME):
                 # remove GEOCODE_FILENAME to get updated data
-                downloadedFile = self.__download()
+                downloaded_file = self.__download()
                 logging.info('Extracting: {}'.format(GEOCODE_FILENAME))
-                with zipfile.ZipFile(downloadedFile) as z:
+                with zipfile.ZipFile(downloaded_file) as z:
                     with open(GEOCODE_FILENAME, 'wb') as fp:
                         fp.write(z.read(GEOCODE_FILENAME))
 
@@ -94,7 +94,7 @@ class GeocodeData:
                     writer.writerow(row)
                     rows.append(row)
             # cleanup downloaded files
-            os.remove(downloadedFile)
+            os.remove(downloaded_file)
             os.remove(GEOCODE_FILENAME)
 
         # load a list of known coordinates and corresponding __locations
