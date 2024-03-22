@@ -90,7 +90,8 @@ class GeocodeData:
                 country_code = row[8]
                 if latitude and longitude and country_code:
                     city = row[1]
-                    row = latitude, longitude, country_code, city
+                    admin_code = row[10]
+                    row = latitude, longitude, country_code, admin_code
                     writer.writerow(row)
                     rows.append(row)
             # cleanup downloaded files
@@ -99,9 +100,9 @@ class GeocodeData:
 
         # load a list of known coordinates and corresponding __locations
         coordinates, __locations = [], []
-        for latitude, longitude, country_code, city in rows:
+        for latitude, longitude, country_code, city, admin_code in rows:
             coordinates.append((latitude, longitude))
-            __locations.append(dict(country_code=country_code, city=city))
+            __locations.append(dict(country_code=country_code, city=city, admin_code=admin_code))
         return coordinates, __locations
 
 
