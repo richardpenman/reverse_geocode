@@ -21,6 +21,7 @@ setup(
     author_email="richard.penman@gmail.com",
     description="Reverse geocode the given latitude / longitude",
     long_description=read("README.rst"),
+    long_description_content_type='text/markdown',
     url="https://github.com/richardpenman/reverse_geocode/",
     classifiers=[
         "Environment :: Web Environment",
