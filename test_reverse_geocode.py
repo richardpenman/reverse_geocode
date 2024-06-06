@@ -9,8 +9,8 @@ class TestBuiltwith(unittest.TestCase):
         self.assertEqual(
             results,
             [
-                {"city": "Melbourne", "country_code": "AU", "country": "Australia"},
-                {"city": "Jerusalem", "country_code": "IL", "country": "Israel"},
+                {"city": "Melbourne", "country_code": "AU", "country": "Australia", "state": "Victoria"},
+                {"city": "Jerusalem", "country_code": "IL", "country": "Israel", "state": "Jerusalem"},
             ],
         )
 
