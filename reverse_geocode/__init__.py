@@ -46,7 +46,7 @@ class GeocodeData:
     def __load_countries(self, country_filename):
         """Load a map of country code to name"""
         self.__countries = {}
-        with open(country_filename, "r") as handler:
+        with open(country_filename, "r", encoding="utf-8") as handler:
             for code, name in csv.reader(handler):
                 self.__countries[code] = name
 
@@ -95,7 +95,7 @@ class GeocodeData:
         """
         if os.path.exists(local_filename):
             # open compact JSON
-            rows = json.load(open(local_filename, "r"))
+            rows = json.load(open(local_filename, "r", encoding="utf-8"))
         else:
             geocode_reader, state_code_map = self.__download_geocode()
 
@@ -109,7 +109,7 @@ class GeocodeData:
                     state = state_code_map.get(row[8] + '.' + row[10])
                     row = latitude, longitude, country_code, city, state
                     rows.append(row)
-            json.dump(rows, open(local_filename, "w"))
+            json.dump(rows, open(local_filename, "w", encoding="utf-8"))
 
         # load a list of known coordinates and corresponding __locations
         coordinates, __locations = [], []
