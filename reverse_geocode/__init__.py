@@ -35,7 +35,9 @@ def singleton(cls):
 @singleton
 class GeocodeData:
     def __init__(self, geocode_filename="geocode.json", country_filename="countries.csv"):
-        # remove geocode_filename to get updated data
+        def rel_path(filename):
+            return os.path.join(os.getcwd(), os.path.dirname(__file__), filename)
+        # note: remove geocode_filename to get updated data
         coordinates, self.__locations = self.__extract(rel_path(geocode_filename))
         self.__tree = KDTree(coordinates)
         self.__load_countries(rel_path(country_filename))
@@ -117,19 +119,14 @@ class GeocodeData:
         return coordinates, __locations
 
 
-def rel_path(filename):
-    """Return the path of this filename relative to the current script"""
-    return os.path.join(os.getcwd(), os.path.dirname(__file__), filename)
-
-
 def get(coordinate):
-    """Search for closest known location to this coordinate"""
+    """Search for closest known location to this lat/lng coordinate"""
     gd = GeocodeData()
     return gd.query([coordinate])[0]
 
 
 def search(coordinates):
-    """Search for closest known locations to these coordinates"""
+    """Search for closest known locations to this list of lat/lng coordinates"""
     gd = GeocodeData()
     return gd.query(coordinates)
 

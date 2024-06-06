@@ -20,7 +20,7 @@ setup(
     author="Richard Penman",
     author_email="richard.penman@gmail.com",
     description="Reverse geocode the given latitude / longitude",
-    long_description=read("README.rst"),
+    long_description=read("README.md"),
     long_description_content_type='text/markdown',
     url="https://github.com/richardpenman/reverse_geocode/",
     classifiers=[
