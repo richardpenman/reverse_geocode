@@ -1,6 +1,4 @@
-===============
-Reverse Geocode
-===============
+# Reverse Geocode
 
 Reverse Geocode takes a latitude / longitude coordinate and returns the country and city.
 Example usage:
@@ -17,9 +15,7 @@ The module has a set of known geocoded locations and uses a [k-d tree](http://en
 
 As this is a point based and not a polygon based lookup it will only give a rough idea of the location/city
 
-=======
-Install
-=======
+# Install
 
 Supports python 3:
 
