@@ -137,6 +137,6 @@ def search(coordinates):
 if __name__ == "__main__":
     # test some coordinate lookups
     city1 = -37.81, 144.96
-    city2 = 31.76, 35.21
+    city2 = 40.71427000, -74.00597000
     print(get(city1))
     print(search([city1, city2]))

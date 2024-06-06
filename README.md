@@ -5,10 +5,13 @@ Example usage:
 
 ```
 >>> import reverse_geocode
->>> coordinates = (-37.81, 144.96), (31.76, 35.21)
->>> reverse_geocode.search(coordinates)
+>>> melbourne_coord = -37.81, 144.96
+>>> reverse_geocode.get(melbourne_coord)
+{'city': 'Melbourne', 'country_code': 'AU', 'country': 'Australia', 'state': 'Victoria'}
+>>> nyc_coord = 40.71427000, -74.00597000
+>>> reverse_geocode.search((melbourne_coord, nyc_coord))
 [{'city': 'Melbourne', 'country_code': 'AU', 'country': 'Australia', 'state': 'Victoria'},
- {'city': 'Jerusalem', 'country_code': 'IL', 'country': 'Israel', 'state': 'Jerusalem'}]
+ {'city': 'New York City', 'country_code': 'US', 'country': 'United States', 'state': 'New York'}]
 ```
 
 The module has a set of known geocoded locations and uses a [k-d tree](http://en.wikipedia.org/wiki/K-d_tree>) to efficiently find the nearest neighbour. This can be useful when you need to reverse geocode a large number of coordinates so a web API is not practical.
