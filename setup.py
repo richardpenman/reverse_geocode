@@ -8,13 +8,13 @@ def read(filename):
 
 setup(
     name="reverse_geocode",
-    version="1.6.1",
+    version="1.6.2",
     packages=["reverse_geocode"],
     package_dir={"reverse_geocode": "reverse_geocode"},
     data_files=[
         (
             "reverse_geocode",
-            ["reverse_geocode/geocode.csv", "reverse_geocode/countries.csv"],
+            ["reverse_geocode/geocode.json", "reverse_geocode/countries.csv"],
         )
     ],
     author="Richard Penman",

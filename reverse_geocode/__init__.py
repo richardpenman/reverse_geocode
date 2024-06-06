@@ -2,6 +2,7 @@
 
 import csv
 import io
+import json
 import logging
 import os
 from scipy.spatial import cKDTree as KDTree
@@ -33,7 +34,7 @@ def singleton(cls):
 
 @singleton
 class GeocodeData:
-    def __init__(self, geocode_filename="geocode.csv", country_filename="countries.csv"):
+    def __init__(self, geocode_filename="geocode.json", country_filename="countries.csv"):
         # remove geocode_filename to get updated data
         coordinates, self.__locations = self.__extract(rel_path(geocode_filename))
         self.__tree = KDTree(coordinates)
@@ -91,13 +92,12 @@ class GeocodeData:
         """Extract geocode data from zip
         """
         if os.path.exists(local_filename):
-            # open compact CSV
-            rows = csv.reader(open(local_filename, "r"))
+            # open compact JSON
+            rows = json.load(open(local_filename, "r"))
         else:
             geocode_reader, state_code_map = self.__download_geocode()
 
-            # extract coordinates into more compact CSV for faster loading
-            writer = csv.writer(open(local_filename, "w"))
+            # extract coordinates into more compact JSON for faster loading
             rows = []
             for row in geocode_reader:
                 latitude, longitude = row[4:6]
@@ -106,8 +106,8 @@ class GeocodeData:
                     city = row[1]
                     state = state_code_map.get(row[8] + '.' + row[10])
                     row = latitude, longitude, country_code, city, state
-                    writer.writerow(row)
                     rows.append(row)
+            json.dump(rows, open(local_filename, "w"))
 
         # load a list of known coordinates and corresponding __locations
         coordinates, __locations = [], []
