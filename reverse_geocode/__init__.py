@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import io
 import logging
 import os
+from scipy.spatial import cKDTree as KDTree
 import sys
-import zipfile
-
 if sys.platform == "win32":
     csv.field_size_limit(2**31 - 1)
 else:
     csv.field_size_limit(sys.maxsize)
-try:
-    from urllib import urlretrieve
-except ImportError:
-    from urllib.request import urlretrieve
-from scipy.spatial import cKDTree as KDTree
+from urllib.request import urlopen
+import zipfile
 
 # location of geocode data to download
 GEOCODE_URL = "http://download.geonames.org/export/dump/cities1000.zip"
 GEOCODE_FILENAME = "cities1000.txt"
+STATE_CODE_URL = "http://download.geonames.org/export/dump/admin1CodesASCII.txt"
 
 
 def singleton(cls):
@@ -35,12 +33,12 @@ def singleton(cls):
 
 @singleton
 class GeocodeData:
-    def __init__(
-        self, geocode_filename="geocode.csv", country_filename="countries.csv"
-    ):
+    def __init__(self, geocode_filename="geocode.csv", country_filename="countries.csv"):
+        # remove geocode_filename to get updated data
         coordinates, self.__locations = self.__extract(rel_path(geocode_filename))
         self.__tree = KDTree(coordinates)
         self.__load_countries(rel_path(country_filename))
+
 
     def __load_countries(self, country_filename):
         """Load a map of country code to name"""
@@ -48,6 +46,7 @@ class GeocodeData:
         with open(country_filename, "r") as handler:
             for code, name in csv.reader(handler):
                 self.__countries[code] = name
+
 
     def query(self, coordinates):
         """Find closest match to this list of coordinates"""
@@ -62,48 +61,59 @@ class GeocodeData:
                 result["country"] = self.__countries.get(result["country_code"], "")
             return results
 
-    def __download(self):
-        """Download geocode file"""
-        local_filename = os.path.abspath(os.path.basename(GEOCODE_URL))
-        if not os.path.exists(local_filename):
-            logging.info("Downloading: {}".format(GEOCODE_URL))
-            urlretrieve(GEOCODE_URL, local_filename)
-        return local_filename
+
+    def __download_geocode(self):
+        """Download geocode data from http://download.geonames.org/export/dump/
+        """
+        def geocode_csv_reader(data):
+            return csv.reader(data.decode('utf-8').splitlines(), delimiter="\t")
+
+        geocode_response = urlopen(GEOCODE_URL)
+        geocode_zipfile = zipfile.ZipFile(io.BytesIO(geocode_response.read()))
+        geocode_reader = geocode_csv_reader(geocode_zipfile.read(GEOCODE_FILENAME))
+
+        state_response = urlopen(STATE_CODE_URL)
+        state_reader = geocode_csv_reader(state_response.read())
+        return geocode_reader, self.__gen_state_code_map(state_reader)
+
+
+    def __gen_state_code_map(self, state_reader):
+        """Build a map of state code data from
+        http://download.geonames.org/export/dump/admin1CodesASCII.txt
+        """
+        state_code_map = {}
+        for row in state_reader:
+            state_code_map[row[0]] = row[1]
+        return state_code_map
+
 
     def __extract(self, local_filename):
-        """Extract geocode data from zip"""
+        """Extract geocode data from zip
+        """
         if os.path.exists(local_filename):
             # open compact CSV
             rows = csv.reader(open(local_filename, "r"))
         else:
-            if not os.path.exists(GEOCODE_FILENAME):
-                # remove GEOCODE_FILENAME to get updated data
-                downloaded_file = self.__download()
-                logging.info("Extracting: {}".format(GEOCODE_FILENAME))
-                with zipfile.ZipFile(downloaded_file) as z:
-                    with open(GEOCODE_FILENAME, "wb") as fp:
-                        fp.write(z.read(GEOCODE_FILENAME))
-                os.remove(downloaded_file)
+            geocode_reader, state_code_map = self.__download_geocode()
 
             # extract coordinates into more compact CSV for faster loading
             writer = csv.writer(open(local_filename, "w"))
             rows = []
-            for row in csv.reader(open(GEOCODE_FILENAME, "r"), delimiter="\t"):
+            for row in geocode_reader:
                 latitude, longitude = row[4:6]
                 country_code = row[8]
                 if latitude and longitude and country_code:
                     city = row[1]
-                    row = latitude, longitude, country_code, city
+                    state = state_code_map.get(row[8] + '.' + row[10])
+                    row = latitude, longitude, country_code, city, state
                     writer.writerow(row)
                     rows.append(row)
-            # cleanup downloaded files
-            os.remove(GEOCODE_FILENAME)
 
         # load a list of known coordinates and corresponding __locations
         coordinates, __locations = [], []
-        for latitude, longitude, country_code, city in rows:
+        for latitude, longitude, country_code, city, state in rows:
             coordinates.append((latitude, longitude))
-            __locations.append(dict(country_code=country_code, city=city))
+            __locations.append(dict(country_code=country_code, city=city, state=state))
         return coordinates, __locations
 
 
