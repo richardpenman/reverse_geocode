@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import gzip
 import io
 import json
 import logging
 import os
 from scipy.spatial import cKDTree as KDTree
 import sys
+import zipfile
+from urllib.request import urlopen
 
 if sys.platform == "win32":
     csv.field_size_limit(2**31 - 1)
 else:
     csv.field_size_limit(sys.maxsize)
-from urllib.request import urlopen
-import zipfile
 
 # location of geocode data to download
 GEOCODE_URL = "http://download.geonames.org/export/dump/cities1000.zip"
@@ -36,16 +37,17 @@ class GeocodeData(metaclass=Singleton):
     def __init__(
         self,
         min_population=0,
-        geocode_filename="geocode.json",
+        geocode_filename="geocode.gz",
         country_filename="countries.csv",
     ):
         def rel_path(filename):
             return os.path.join(os.getcwd(), os.path.dirname(__file__), filename)
 
         # note: remove geocode_filename to get updated data
-        coordinates, self._locations = self._extract(
+        self._locations = self._extract(
             rel_path(geocode_filename), min_population
         )
+        coordinates = [(loc["latitude"], loc["longitude"]) for loc in self._locations]
         self._tree = KDTree(coordinates)
         self._load_countries(rel_path(country_filename))
 
@@ -75,6 +77,7 @@ class GeocodeData(metaclass=Singleton):
         def geocode_csv_reader(data):
             return csv.reader(data.decode("utf-8").splitlines(), delimiter="\t")
 
+        #with zipfile.ZipFile(open('cities1000.zip', 'rb')) as geocode_zipfile:
         with zipfile.ZipFile(
             io.BytesIO(urlopen(GEOCODE_URL).read())
         ) as geocode_zipfile:
@@ -96,11 +99,10 @@ class GeocodeData(metaclass=Singleton):
         return state_code_map
 
     def _extract(self, local_filename, min_population):
-        """Extract geocode data from zip"""
+        """Extract locations from geonames and store locally"""
         if os.path.exists(local_filename):
-            # open compact JSON
-            with open(local_filename, "r", encoding="utf-8") as fp:
-                locations = json.load(fp)
+            with gzip.open(local_filename) as gz:
+                locations = json.loads(gz.read())
         else:
             geocode_reader, state_code_map, county_code_map = self._download_geocode()
 
@@ -130,16 +132,15 @@ class GeocodeData(metaclass=Singleton):
                         loc["county"] = county
                     locations.append(loc)
 
-            with open(local_filename, "w", encoding="utf-8") as fp:
-                json.dump(locations, fp)
+            with gzip.open(local_filename, 'w') as gz:
+                gz.write(json.dumps(locations, separators=(',', ':')).encode('utf-8'))
 
         if min_population > 0:
             locations = [
                 loc for loc in locations if loc["population"] >= min_population
             ]
-        coordinates = [(loc["latitude"], loc["longitude"]) for loc in locations]
 
-        return coordinates, locations
+        return locations
 
 
 def get(coordinate, min_population=0):

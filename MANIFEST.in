@@ -1,1 +1,1 @@
-include README.md reverse_geocode/countries.csv reverse_geocode/geocode.json
+include README.md reverse_geocode/countries.csv reverse_geocode/geocode.gz
