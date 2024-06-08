@@ -17,6 +17,10 @@ Example reverse geocoding a coordinate:
 >>> melbourne_coord = -37.81, 144.96
 >>> reverse_geocode.get(melbourne_coord)
 {'country_code': 'AU', 'city': 'Melbourne', 'latitude': -37.814, 'longitude': 144.96332, 'population': 4917750, 'state': 'Victoria', 'country': 'Australia'}
+```
+
+Example reverse geocoding a list of coordinates:
+```
 >>> nyc_coord = 40.71427000, -74.00597000
 >>> reverse_geocode.search((melbourne_coord, nyc_coord))
 [{'country_code': 'AU', 'city': 'Melbourne', 'latitude': -37.814, 'longitude': 144.96332, 'population': 4917750, 'state': 'Victoria', 'country': 'Australia'},
