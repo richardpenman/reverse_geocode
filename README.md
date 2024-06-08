@@ -10,31 +10,33 @@ Note that as this is point based and not a polygon based lookup it will only giv
 
 ## Example usage
 
+Example reverse geocoding a coordinate:
+
 ```
 >>> import reverse_geocode
 >>> melbourne_coord = -37.81, 144.96
 >>> reverse_geocode.get(melbourne_coord)
-{'city': 'Melbourne', 'country_code': 'AU', 'country': 'Australia', 'state': 'Victoria'}
+{'country_code': 'AU', 'city': 'Melbourne', 'latitude': -37.814, 'longitude': 144.96332, 'population': 4917750, 'state': 'Victoria', 'country': 'Australia'}
 >>> nyc_coord = 40.71427000, -74.00597000
 >>> reverse_geocode.search((melbourne_coord, nyc_coord))
-[{'city': 'Melbourne', 'country_code': 'AU', 'country': 'Australia', 'state': 'Victoria'},
- {'city': 'New York City', 'country_code': 'US', 'country': 'United States', 'state': 'New York'}]
+[{'country_code': 'AU', 'city': 'Melbourne', 'latitude': -37.814, 'longitude': 144.96332, 'population': 4917750, 'state': 'Victoria', 'country': 'Australia'},
+ {'country_code': 'US', 'city': 'New York City', 'latitude': 40.71427, 'longitude': -74.00597, 'population': 8804190, 'state': 'New York', 'country': 'United States'}]
 ```
 
-The module returns the nearest known location, which may not be as expected when there is a much larger city nearby.
-For example querying for the following coordinate will return the Seaport area of NYC:
+By default the nearest known location is returned, which may not be as expected when there is a much larger city nearby.
+For example querying for the following coordinate near NYC will return Seaport:
 
 ```
 >>> nyc_coordinate = 40.71, -74.00
 >>> reverse_geocode.get(nyc_coordinate)
-{"city": "Seaport", "country_code": "US", "country": "United States", "state": "New York"}
+{'country_code': 'US', 'city': 'Seaport', 'latitude': 40.70906, 'longitude': -74.00317, 'population': 8385, 'state': 'New York', 'county': 'New York County', 'country': 'United States'}
 ```
 
-To filter for larger cities a minimum population for results can be defined:
+To filter for larger cities a minimum population can be set. Using a minimum population of `100000` with the above coordinate now returns NYC:
         
 ```
 >>> reverse_geocode.get(nyc_coordinate, min_population=100000)
-{"city": "New York City", "country_code": "US", "country": "United States", "state": "New York"}
+{'country_code': 'US', 'city': 'New York City', 'latitude': 40.71427, 'longitude': -74.00597, 'population': 8804190, 'state': 'New York', 'country': 'United States'}
 ```
 
 

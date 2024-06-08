@@ -7,6 +7,7 @@ import logging
 import os
 from scipy.spatial import cKDTree as KDTree
 import sys
+
 if sys.platform == "win32":
     csv.field_size_limit(2**31 - 1)
 else:
@@ -18,10 +19,12 @@ import zipfile
 GEOCODE_URL = "http://download.geonames.org/export/dump/cities1000.zip"
 GEOCODE_FILENAME = "cities1000.txt"
 STATE_CODE_URL = "http://download.geonames.org/export/dump/admin1CodesASCII.txt"
+COUNTY_CODE_URL = "https://download.geonames.org/export/dump/admin2Codes.txt"
 
 
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         key = cls, args
         if key not in cls._instances:
@@ -30,27 +33,31 @@ class Singleton(type):
 
 
 class GeocodeData(metaclass=Singleton):
-    def __init__(self, min_population=0, geocode_filename="geocode.json", country_filename="countries.csv"):
+    def __init__(
+        self,
+        min_population=0,
+        geocode_filename="geocode.json",
+        country_filename="countries.csv",
+    ):
         def rel_path(filename):
             return os.path.join(os.getcwd(), os.path.dirname(__file__), filename)
+
         # note: remove geocode_filename to get updated data
-        coordinates, self._locations = self._extract(rel_path(geocode_filename), min_population)
+        coordinates, self._locations = self._extract(
+            rel_path(geocode_filename), min_population
+        )
         self._tree = KDTree(coordinates)
         self._load_countries(rel_path(country_filename))
 
-
     def _load_countries(self, country_filename):
-        """Load a map of country code to name
-        """
+        """Load a map of country code to name"""
         self._countries = {}
         with open(country_filename, "r", encoding="utf-8") as handler:
             for code, name in csv.reader(handler):
                 self._countries[code] = name
 
-
     def query(self, coordinates):
-        """Find closest match to this list of coordinates
-        """
+        """Find closest match to this list of coordinates"""
         try:
             distances, indices = self._tree.query(coordinates, k=1)
         except ValueError as e:
@@ -62,78 +69,94 @@ class GeocodeData(metaclass=Singleton):
                 result["country"] = self._countries.get(result["country_code"], "")
             return results
 
-
     def _download_geocode(self):
-        """Download geocode data from http://download.geonames.org/export/dump/
-        """
+        """Download geocode data from http://download.geonames.org/export/dump/"""
+
         def geocode_csv_reader(data):
-            return csv.reader(data.decode('utf-8').splitlines(), delimiter="\t")
+            return csv.reader(data.decode("utf-8").splitlines(), delimiter="\t")
 
-        geocode_response = urlopen(GEOCODE_URL)
-        geocode_zipfile = zipfile.ZipFile(io.BytesIO(geocode_response.read()))
-        geocode_reader = geocode_csv_reader(geocode_zipfile.read(GEOCODE_FILENAME))
+        with zipfile.ZipFile(
+            io.BytesIO(urlopen(GEOCODE_URL).read())
+        ) as geocode_zipfile:
+            geocode_reader = geocode_csv_reader(geocode_zipfile.read(GEOCODE_FILENAME))
 
-        state_response = urlopen(STATE_CODE_URL)
-        state_reader = geocode_csv_reader(state_response.read())
-        return geocode_reader, self._gen_state_code_map(state_reader)
+        state_reader = geocode_csv_reader(urlopen(STATE_CODE_URL).read())
+        county_reader = geocode_csv_reader(urlopen(COUNTY_CODE_URL).read())
+        return (
+            geocode_reader,
+            self._gen_code_map(state_reader),
+            self._gen_code_map(county_reader),
+        )
 
-
-    def _gen_state_code_map(self, state_reader):
-        """Build a map of state code data from
-        http://download.geonames.org/export/dump/admin1CodesASCII.txt
-        """
+    def _gen_code_map(self, state_reader):
+        """Build a map of code data from geonames"""
         state_code_map = {}
         for row in state_reader:
             state_code_map[row[0]] = row[1]
         return state_code_map
 
-
     def _extract(self, local_filename, min_population):
-        """Extract geocode data from zip
-        """
+        """Extract geocode data from zip"""
         if os.path.exists(local_filename):
             # open compact JSON
-            rows = json.load(open(local_filename, "r", encoding="utf-8"))
+            with open(local_filename, "r", encoding="utf-8") as fp:
+                locations = json.load(fp)
         else:
-            geocode_reader, state_code_map = self._download_geocode()
+            geocode_reader, state_code_map, county_code_map = self._download_geocode()
 
             # extract coordinates into more compact JSON for faster loading
-            rows = []
+            locations = []
             for row in geocode_reader:
-                latitude, longitude = row[4:6]
+                latitude = float(row[4])
+                longitude = float(row[5])
                 country_code = row[8]
                 if latitude and longitude and country_code:
                     city = row[1]
-                    state = state_code_map.get(row[8] + '.' + row[10])
+                    state_code = row[8] + "." + row[10]
+                    state = state_code_map.get(state_code)
+                    county_code = state_code + "." + row[11]
+                    county = county_code_map.get(county_code)
                     population = int(row[14])
-                    row = latitude, longitude, country_code, city, state, population
-                    rows.append(row)
-            json.dump(rows, open(local_filename, "w", encoding="utf-8"))
+                    loc = {
+                        "country_code": country_code,
+                        "city": city,
+                        "latitude": latitude,
+                        "longitude": longitude,
+                        "population": population,
+                    }
+                    if state and state != city:
+                        loc["state"] = state
+                    if county and county != city:
+                        loc["county"] = county
+                    locations.append(loc)
 
-        # load a list of known coordinates and corresponding locations
-        coordinates, locations = [], []
-        for latitude, longitude, country_code, city, state, population in rows:
-            if population >= min_population:
-                coordinates.append((latitude, longitude))
-                locations.append(dict(country_code=country_code, city=city, state=state))
+            with open(local_filename, "w", encoding="utf-8") as fp:
+                json.dump(locations, fp)
+
+        if min_population > 0:
+            locations = [
+                loc for loc in locations if loc["population"] >= min_population
+            ]
+        coordinates = [(loc["latitude"], loc["longitude"]) for loc in locations]
+
         return coordinates, locations
 
 
 def get(coordinate, min_population=0):
-    """Search for closest known location to this lat/lng coordinate
-    """
+    """Search for closest known location to this lat/lng coordinate"""
     return GeocodeData(min_population).query([coordinate])[0]
 
 
 def search(coordinates, min_population=0):
-    """Search for closest known locations to this list of lat/lng coordinates
-    """
+    """Search for closest known location at each of given lat/lng coordinates"""
     return GeocodeData(min_population).query(coordinates)
 
 
 if __name__ == "__main__":
     # test some coordinate lookups
     city1 = -37.81, 144.96
-    city2 = 40.71, -74.00
+    city2 = -38.3401, 144.7365
+    city3 = 40.71, -74.00
     print(get(city1))
-    print(search([city1, city2], 100000))
+    print(get(city2))
+    print(search([city1, city3], 100000))
