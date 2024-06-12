@@ -8,15 +8,10 @@ def read(filename):
 
 setup(
     name="reverse_geocode",
-    version="1.6.4",
+    version="1.6.5",
     packages=["reverse_geocode"],
     package_dir={"reverse_geocode": "reverse_geocode"},
-    data_files=[
-        (
-            "reverse_geocode",
-            ["reverse_geocode/countries.csv", "reverse_geocode/geocode.gz"],
-        )
-    ],
+    package_data={"reverse_geocode": ["countries.csv", "geocode.gz"]},
     author="Richard Penman",
     author_email="richard.penman@gmail.com",
     description="Reverse geocode the given latitude / longitude",

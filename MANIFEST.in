@@ -1,1 +1,2 @@
 include README.md reverse_geocode/countries.csv reverse_geocode/geocode.gz
+prune test_reverse_geocode.py
