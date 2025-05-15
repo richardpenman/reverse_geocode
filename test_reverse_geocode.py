@@ -24,12 +24,12 @@ class TestBuiltwith(unittest.TestCase):
 
     def test_population(self):
         # a coordinate near NYC
-        nyc_coordinate = 40.71, -74.00
+        nyc_coordinate = 40.706322, -74.002640
         # try searching for NYC with all data and get a smaller area called Seaport
         all_cities_result = reverse_geocode.get(nyc_coordinate, 0)
         self.assertEqual(
             all_cities_result, 
-            {'country_code': 'US', 'city': 'Seaport', 'latitude': 40.70906, 'longitude': -74.00317, 'population': 8385, 'state': 'New York', 'county': 'New York County', 'country': 'United States'}
+            {'country_code': 'US', 'city': 'Financial District', 'latitude': 40.70789, 'longitude': -74.00857, 'population': 60976, 'state': 'New York', 'county': 'New York County', 'country': 'United States'}
         )
 
         # when restrict to big cities then get the expected match

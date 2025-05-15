@@ -104,6 +104,7 @@ class GeocodeData(metaclass=Singleton):
             with gzip.open(local_filename) as gz:
                 locations = json.loads(gz.read())
         else:
+            print('Downloading geocode data')
             geocode_reader, state_code_map, county_code_map = self._download_geocode()
 
             # extract coordinates into more compact JSON for faster loading
@@ -126,7 +127,7 @@ class GeocodeData(metaclass=Singleton):
                         "longitude": longitude,
                         "population": population,
                     }
-                    if state and state != city:
+                    if state:
                         loc["state"] = state
                     if county and county != city:
                         loc["county"] = county
